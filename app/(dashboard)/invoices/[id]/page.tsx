@@ -8,7 +8,7 @@ import { ArrowLeft, Printer, Download, Mail, X, CreditCard } from 'lucide-react'
 export default function InvoiceDetailsPage() {
     const { id } = useParams();
     const router = useRouter();
-    const { jobs, payments, loading, formatCurrency, addPayment, currency } = useDashboard();
+    const { jobs, payments, loading, formatCurrency, addPayment, updateJobStatus, currency } = useDashboard();
 
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [paymentAmount, setPaymentAmount] = useState('');
