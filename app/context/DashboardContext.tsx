@@ -265,11 +265,31 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const exchangeRates = {
+    const [exchangeRates, setExchangeRates] = useState({
         NGN: 1,
-        USD: 0.000645, // Approx 1550 NGN to 1 USD
-        GBP: 0.000512, // Approx 1950 NGN to 1 GBP
+        USD: 0.000645, // Fallback
+        GBP: 0.000512, // Fallback
+    });
+
+    const fetchRates = async () => {
+        try {
+            const res = await fetch('https://open.er-api.com/v6/latest/NGN');
+            const data = await res.json();
+            if (data && data.rates) {
+                setExchangeRates(prev => ({
+                    ...prev,
+                    USD: data.rates.USD,
+                    GBP: data.rates.GBP
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to fetch live exchange rates:', error);
+        }
     };
+
+    useEffect(() => {
+        fetchRates();
+    }, []);
 
     const formatCurrency = (amount: number) => {
         const convertedAmount = amount * exchangeRates[currency];
