@@ -101,10 +101,22 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             if (jobsData) setJobs(jobsData);
             if (paymentsData) setPayments(paymentsData);
 
-            // Set currency from user preference if available
+            // Set currency from user preference if available, BUT prioritize localStorage
             console.log('User Currency Preference:', currentUser?.currency); // Debug log
-            if (currentUser?.currency) {
+
+            const localCurrency = localStorage.getItem('dashboard_currency');
+            if (localCurrency && ['NGN', 'USD', 'GBP'].includes(localCurrency)) {
+                // If local exists, ensure it is the active state (it should already be from mount effect, but just in case)
+                setCurrencyState(localCurrency as 'NGN' | 'USD' | 'GBP');
+
+                // If server differs from local, sync server to match local (self-healing)
+                if (currentUser?.currency && currentUser.currency !== localCurrency) {
+                    setCurrency(localCurrency as 'NGN' | 'USD' | 'GBP');
+                }
+            } else if (currentUser?.currency) {
+                // Only fall back to server if no local preference
                 setCurrencyState(currentUser.currency);
+                localStorage.setItem('dashboard_currency', currentUser.currency);
             }
         } catch (error) {
             console.error('Error refreshing data:', error);
@@ -228,9 +240,18 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
     const [currency, setCurrencyState] = useState<'NGN' | 'USD' | 'GBP'>('NGN');
 
+    useEffect(() => {
+        // Load currency from localStorage on mount
+        const savedCurrency = localStorage.getItem('dashboard_currency');
+        if (savedCurrency && ['NGN', 'USD', 'GBP'].includes(savedCurrency)) {
+            setCurrencyState(savedCurrency as 'NGN' | 'USD' | 'GBP');
+        }
+    }, []);
+
     const setCurrency = async (newCurrency: 'NGN' | 'USD' | 'GBP') => {
         // Optimistic update
         setCurrencyState(newCurrency);
+        localStorage.setItem('dashboard_currency', newCurrency);
 
         try {
             await fetch('/api/settings/currency', {
