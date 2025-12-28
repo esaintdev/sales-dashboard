@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { FileText, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import JobList from '../components/JobList';
+import { generateMonthlyReport } from '../lib/reports';
 
 export default function Home() {
   const { getStats, loading, user, formatCurrency } = useDashboard();
@@ -28,6 +29,7 @@ export default function Home() {
       </div>
     );
   }
+
 
   return (
     <div className="space-y-12">
@@ -68,13 +70,19 @@ export default function Home() {
           <div className="bg-[#131320] border border-white/5 rounded-3xl p-6 shadow-xl">
             <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <button className="w-full text-left p-4 rounded-2xl bg-white/5 hover:bg-white/10 text-secondary-text hover:text-white transition-all duration-200 flex items-center gap-4 group">
+              <button
+                onClick={() => generateMonthlyReport(stats)}
+                className="w-full text-left p-4 rounded-2xl bg-white/5 hover:bg-white/10 text-secondary-text hover:text-white transition-all duration-200 flex items-center gap-4 group"
+              >
                 <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 group-hover:text-blue-300 group-hover:bg-blue-500/20 transition-colors">
                   <FileText size={20} />
                 </div>
                 <span className="font-medium">Export Monthly Report</span>
               </button>
-              <button className="w-full text-left p-4 rounded-2xl bg-white/5 hover:bg-white/10 text-secondary-text hover:text-white transition-all duration-200 flex items-center gap-4 group">
+              <button
+                onClick={() => router.push('/clients')}
+                className="w-full text-left p-4 rounded-2xl bg-white/5 hover:bg-white/10 text-secondary-text hover:text-white transition-all duration-200 flex items-center gap-4 group"
+              >
                 <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400 group-hover:text-purple-300 group-hover:bg-purple-500/20 transition-colors">
                   <Users size={20} />
                 </div>
