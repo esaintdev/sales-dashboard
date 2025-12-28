@@ -2,14 +2,14 @@
 
 import React from 'react';
 import {
-    BarChart,
-    Bar,
+    LineChart,
+    Line,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    Cell
+    Legend
 } from 'recharts';
 import { useDashboard } from '../context/DashboardContext';
 
@@ -36,8 +36,9 @@ export default function RevenueChart() {
         }
         return acc;
     }, []).sort((a, b) => {
-        // Simple sort by month index could be added here, currently simplified
-        return 0;
+        // Simple sort logic (can be improved if dates span years)
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return months.indexOf(a.name) - months.indexOf(b.name);
     });
 
     if (data.length === 0) {
@@ -50,10 +51,12 @@ export default function RevenueChart() {
 
     return (
         <div className="bg-[#131320] border border-white/5 rounded-3xl p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-white mb-6">Revenue Overview</h3>
+            <h3 className="text-lg font-bold text-white mb-2">Performance Overview</h3>
+            <p className="text-secondary-text text-sm mb-6">Monthly performance metrics across all projects</p>
+
             <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
+                    <LineChart
                         data={data}
                         margin={{
                             top: 5,
@@ -62,17 +65,62 @@ export default function RevenueChart() {
                             bottom: 5,
                         }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                        <XAxis dataKey="name" stroke="#9ca3af" tickLine={false} axisLine={false} />
-                        <YAxis stroke="#9ca3af" tickLine={false} axisLine={false} tickFormatter={(value) => `${currency === 'NGN' ? '₦' : currency === 'GBP' ? '£' : '$'}${value / 1000}k`} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                        <XAxis
+                            dataKey="name"
+                            stroke="#6b7280"
+                            tick={{ fill: '#9ca3af', fontSize: 12 }}
+                            tickLine={false}
+                            axisLine={false}
+                            dy={10}
+                        />
+                        <YAxis
+                            stroke="#6b7280"
+                            tick={{ fill: '#9ca3af', fontSize: 12 }}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(value) => `${value / 1000}k`}
+                        />
                         <Tooltip
                             contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
                             itemStyle={{ color: '#fff' }}
-                            cursor={{ fill: '#ffffff05' }}
+                            cursor={{ stroke: '#ffffff10', strokeWidth: 2 }}
                         />
-                        <Bar dataKey="website" name="Website" stackId="a" fill="#3b82f6" radius={[0, 0, 4, 4]} />
-                        <Bar dataKey="design" name="Design" stackId="a" fill="#a855f7" radius={[4, 4, 0, 0]} />
-                    </BarChart>
+                        <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
+
+                        {/* Website Sales - Blue/Cyan */}
+                        <Line
+                            type="monotone"
+                            dataKey="website"
+                            name="Website"
+                            stroke="#3b82f6"
+                            strokeWidth={3}
+                            dot={false}
+                            activeDot={{ r: 8, fill: '#3b82f6', stroke: '#131320', strokeWidth: 2 }}
+                        />
+
+                        {/* Design Sales - Purple/Pink */}
+                        <Line
+                            type="monotone"
+                            dataKey="design"
+                            name="Design"
+                            stroke="#d946ef"
+                            strokeWidth={3}
+                            dot={false}
+                            activeDot={{ r: 8, fill: '#d946ef', stroke: '#131320', strokeWidth: 2 }}
+                        />
+
+                        {/* Total Sales - Orange */}
+                        <Line
+                            type="monotone"
+                            dataKey="total"
+                            name="Total Revenue"
+                            stroke="#f97316"
+                            strokeWidth={3}
+                            dot={false}
+                            activeDot={{ r: 8, fill: '#f97316', stroke: '#131320', strokeWidth: 2 }}
+                        />
+                    </LineChart>
                 </ResponsiveContainer>
             </div>
         </div>
