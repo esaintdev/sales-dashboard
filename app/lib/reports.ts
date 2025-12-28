@@ -1,7 +1,9 @@
+import * as XLSX from 'xlsx';
+
 export const generateMonthlyReport = (stats: any) => {
     // Current date for filename
     const date = new Date().toISOString().split('T')[0];
-    const filename = `monthly_report_${date}.csv`;
+    const filename = `monthly_report_${date}.xlsx`;
 
     // Static headers for now, can be expanded based on actual data shape
     const headers = ['Category', 'Amount', 'Currency'];
@@ -15,22 +17,13 @@ export const generateMonthlyReport = (stats: any) => {
         ['Total Outstanding', stats.totalOutstanding, 'NGN'],
     ];
 
-    // Convert to CSV format
-    const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.join(','))
-    ].join('\n');
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-    // Create blob and download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+    // Append worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Monthly Report");
+
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, filename);
 };
