@@ -3,20 +3,29 @@
 import React, { useState } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 
-export default function ClientForm({ onClose }: { onClose?: () => void }) {
-    const { addClient } = useDashboard();
+
+import { Client } from '../types';
+
+export default function ClientForm({ onClose, initialData }: { onClose?: () => void, initialData?: Client }) {
+    const { addClient, updateClient } = useDashboard();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
-        name: '',
-        company: '',
-        email: '',
-        phone: '',
+        name: initialData?.name || '',
+        company: initialData?.company || '',
+        email: initialData?.email || '',
+        phone: initialData?.phone || '',
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        await addClient(formData);
+
+        if (initialData) {
+            await updateClient(initialData.id, formData);
+        } else {
+            await addClient(formData);
+        }
+
         setIsLoading(false);
         setFormData({ name: '', company: '', email: '', phone: '' });
         if (onClose) onClose();

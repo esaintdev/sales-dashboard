@@ -12,9 +12,40 @@ import JobList from '../components/JobList';
 import { generateMonthlyReport } from '../lib/reports';
 
 export default function Home() {
-  const { getStats, loading, user, formatCurrency } = useDashboard();
-  const stats = getStats();
+  const { jobs, loading, user, formatCurrency } = useDashboard();
   const router = useRouter();
+  const [selectedMonth, setSelectedMonth] = React.useState<string>('All Time');
+
+  const months = [
+    'All Time', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // Filter jobs based on selected month
+  const filteredJobs = React.useMemo(() => {
+    if (selectedMonth === 'All Time') return jobs;
+    return jobs.filter(job => {
+      const jobDate = new Date(job.created_at); // Assuming created_at is the relevant date
+      const jobMonth = jobDate.toLocaleString('default', { month: 'long' });
+      return jobMonth === selectedMonth;
+    });
+  }, [jobs, selectedMonth]);
+
+  // Calculate stats based on filtered jobs
+  const stats = React.useMemo(() => {
+    const totalSales = filteredJobs.reduce((acc, job) => acc + (job.price || 0), 0);
+    const websiteSales = filteredJobs
+      .filter((job) => job.type === 'website')
+      .reduce((acc, job) => acc + (job.price || 0), 0);
+    const designSales = filteredJobs
+      .filter((job) => job.type === 'graphic_design')
+      .reduce((acc, job) => acc + (job.price || 0), 0);
+
+    const totalCollected = filteredJobs.reduce((acc, job) => acc + (job.amount_paid || 0), 0);
+    const totalOutstanding = totalSales - totalCollected;
+
+    return { totalSales, websiteSales, designSales, totalCollected, totalOutstanding };
+  }, [filteredJobs]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -41,11 +72,31 @@ export default function Home() {
           </h1>
           <p className="text-secondary-text">Welcome back, {user.email?.split('@')[0] || 'Developer'}.</p>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-secondary-text uppercase tracking-widest mb-1">Total Outstanding</p>
-          <p className="text-2xl font-bold text-secondary-accent">
-            {formatCurrency(stats.totalOutstanding)}
-          </p>
+        <div className="flex items-center gap-6">
+          {/* Month Filter */}
+          <div className="relative">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="appearance-none bg-[#131320] text-secondary-text border border-white/10 rounded-xl px-4 py-2 pr-8 focus:outline-none focus:border-primary-accent hover:border-white/20 transition-colors"
+            >
+              {months.map(month => (
+                <option key={month} value={month}>{month}</option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary-text">
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <p className="text-sm text-secondary-text uppercase tracking-widest mb-1">Total Outstanding</p>
+            <p className="text-2xl font-bold text-secondary-accent">
+              {formatCurrency(stats.totalOutstanding)}
+            </p>
+          </div>
         </div>
       </header>
 

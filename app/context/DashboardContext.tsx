@@ -14,6 +14,7 @@ interface DashboardContextType {
     addJob: (job: Omit<Job, 'id' | 'created_at' | 'clients'>) => Promise<Job | null>;
     deleteJob: (id: string) => Promise<void>;
     deleteClient: (id: string) => Promise<void>;
+    updateClient: (id: string, updates: Partial<Client>) => Promise<void>;
 
     updateJobStatus: (id: string, status: Job['status'], amountPaid?: number) => Promise<void>;
     addPayment: (jobId: string, amount: number, notes?: string) => Promise<void>;
@@ -179,6 +180,19 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         setJobs((prev) => prev.filter((job) => job.client_id !== id));
     };
 
+    const updateClient = async (id: string, updates: Partial<Client>) => {
+        const { error } = await supabase
+            .from('clients')
+            .update(updates)
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error updating client:', error);
+            return;
+        }
+        setClients((prev) => prev.map((client) => (client.id === id ? { ...client, ...updates } : client)));
+    };
+
     const updateJobStatus = async (id: string, status: Job['status'], amountPaid?: number) => {
         const updates: any = { status };
         if (amountPaid !== undefined) updates.amount_paid = amountPaid;
@@ -319,6 +333,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                 deleteJob,
 
                 deleteClient,
+                updateClient,
                 updateJobStatus,
                 addPayment,
                 payments,

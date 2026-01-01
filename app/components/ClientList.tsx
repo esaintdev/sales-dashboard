@@ -51,13 +51,7 @@ export default function ClientList() {
                             {/* <button className="p-2 hover:bg-white/10 rounded-lg text-blue-400 transition-colors">
                                 <Edit2 size={16} />
                             </button> */}
-                            <button
-                                onClick={() => handleDelete(client.id)}
-                                disabled={deletingId === client.id}
-                                className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors disabled:opacity-50"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            {/* Delete button removed - Read Only View */}
                         </div>
                     </div>
 
