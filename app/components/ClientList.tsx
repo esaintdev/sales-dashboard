@@ -4,7 +4,13 @@ import React, { useState } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 import { Trash2, Edit2, Mail, Phone, Building } from 'lucide-react';
 
-export default function ClientList() {
+import { Client } from '../types';
+
+interface ClientListProps {
+    onEdit: (client: Client) => void;
+}
+
+export default function ClientList({ onEdit }: ClientListProps) {
     const { clients, deleteClient, loading } = useDashboard();
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -47,11 +53,22 @@ export default function ClientList() {
                             )}
                         </div>
                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {/* Edit button could be implemented later or now if we pass state up */}
-                            {/* <button className="p-2 hover:bg-white/10 rounded-lg text-blue-400 transition-colors">
+                            <button
+                                onClick={() => onEdit(client)}
+                                className="p-2 hover:bg-white/10 rounded-lg text-blue-400 transition-colors"
+                            >
                                 <Edit2 size={16} />
-                            </button> */}
-                            {/* Delete button removed - Read Only View */}
+                            </button>
+                            <button
+                                onClick={() => handleDelete(client.id)}
+                                className="p-2 hover:bg-white/10 rounded-lg text-red-400 transition-colors"
+                            >
+                                {deletingId === client.id ? (
+                                    <span className="animate-spin">⌛</span>
+                                ) : (
+                                    <Trash2 size={16} />
+                                )}
+                            </button>
                         </div>
                     </div>
 
